@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SBS 기자 출입처 실시간 오디오 모니터링</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --card-w: 320px;
+        --meter-h: 160px;
+      }
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto,
+          Apple SD Gothic Neo, sans-serif;
+        background: #fafafa;
+        margin: 24px;
+      }
+      h1 {
+        margin: 0 0 16px 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--card-w), 1fr));
+        gap: 16px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 12px 14px;
+      }
+      .title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .pill {
+        font-size: 12px;
+        background: #eee;
+        padding: 2px 8px;
+        border-radius: 9999px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 8px 0;
+        flex-wrap: wrap;
+      }
+      .meter {
+        width: 24px;
+        height: var(--meter-h);
+        background: #111;
+        border-radius: 6px;
+      }
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .small {
+        color: #666;
+        font-size: 12px;
+      }
+      fieldset {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 16px;
+      }
+      legend {
+        color: #333;
+        padding: 0 6px;
+      }
+      input[type="range"] {
+        width: 220px;
+      }
+      .status {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      button {
+        width: 120px;
+        height: 60px;
+        font-size: x-large;
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        background: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    </style>
+    <!-- MediaMTX WebRTC helper (동일 오리진에서 서비스) -->
+    <script src="./reader.js"></script>
+  </head>
+  <body>
+    <h1>SBS 기자 출입처 실시간 오디오 모니터링</h1>
+
+    <fieldset>
+      <legend>전체 제어</legend>
+      <div class="row controls">
+        <label class="small">
+          Monitor 선택:
+          <select id="selMonitor">
+            <option value="0">고검</option>
+            <option value="1">국회</option>
+            <option value="2">국방부</option>
+            <option value="3">외교부</option>
+            <option value="4">test</option>
+          </select>
+        </label>
+
+        <label>
+          Master Gain
+          <input
+            id="slMaster"
+            type="range"
+            min="0"
+            max="2"
+            step="0.01"
+            value="1.00"
+          />
+          <span id="lblMaster">1.00</span>
+        </label>
+
+        <button id="btnStart">Start</button>
+      </div>
+
+      <div id="globalStatus" class="status">
+        <span class="pill" id="ctx">AudioContext: idle</span>
+      </div>
+    </fieldset>
+
+    <div class="grid" id="grid"></div>
+
+    <script>
+      // ───────────────────────────────────────────────────────────────────
+      // 구성: 모노 스트림(WebRTC → MediaStream → WebAudio)
+      const SOURCES = [
+        { title: "고검", url: "http://10.10.107.109:8889/alsa10" },
+        { title: "국회", url: "http://10.10.107.109:8889/alsa11" },
+        { title: "국방부", url: "http://10.10.107.109:8889/alsa00" },
+        { title: "외교부", url: "http://10.10.107.109:8889/alsa01" },
+        { title: "test", url: "http://10.10.107.109:8889/test" },
+      ];
+      const whepUrl = (u) => u.replace(/\/$/, "") + "/whep";
+
+      const grid = document.getElementById("grid");
+      const selMonitor = document.getElementById("selMonitor");
+      const slMaster = document.getElementById("slMaster");
+      const lblMaster = document.getElementById("lblMaster");
+      const ctxEl = document.getElementById("ctx");
+      const btnStart = document.getElementById("btnStart");
+
+      let audioCtx = null;
+      let master = null;
+      let routed = false;
+      let started = false;
+
+      const state = SOURCES.map(() => ({
+        reader: null,
+        remoteTrack: null,
+        remoteStream: null,
+        aud: null, // decode 용 <audio> (mute)
+        srcNode: null, // MediaStreamSource
+        gainNode: null, // 모니터 선택된 소스만 1, 나머지 0
+        analyser: null, // 레벨미터
+        meterRAF: 0,
+        canvas: null,
+        vctx: null,
+        statusEl: null,
+        levelEl: null,
+        readyResolve: null,
+        ready: null,
+      }));
+
+      // ───────────────────────────────────────────────────────────────────
+      // UI 생성(초기 1회)
+      SOURCES.forEach((s, i) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const title = document.createElement("div");
+        title.className = "title";
+        title.innerHTML = `${s.title} <span class="pill" id="st${i}">Idle</span>`;
+
+        const meterWrap = document.createElement("div");
+        meterWrap.className = "row";
+        const canvas = document.createElement("canvas");
+        canvas.className = "meter";
+        canvas.id = `vz${i}`;
+        meterWrap.appendChild(canvas);
+
+        const labels = document.createElement("div");
+        labels.innerHTML = `
+          <div class="small">세로 레벨미터 (RMS dBFS)</div>
+          <div class="small" id="lv${i}">- dBFS</div>
+          <div class="small">이 소스를 모니터:
+            <input type="radio" name="mon" value="${i}" id="mon${i}">
+          </div>`;
+        meterWrap.appendChild(labels);
+
+        card.appendChild(title);
+        card.appendChild(meterWrap);
+        grid.appendChild(card);
+
+        state[i].canvas = canvas;
+        state[i].vctx = canvas.getContext("2d");
+        state[i].statusEl = document.getElementById(`st${i}`);
+        state[i].levelEl = document.getElementById(`lv${i}`);
+
+        document.getElementById(`mon${i}`).addEventListener("change", () => {
+          if (document.getElementById(`mon${i}`).checked) {
+            selMonitor.value = String(i);
+            applyMonitorSelection();
+          }
+        });
+      });
+
+      // 컨트롤 바인딩
+      selMonitor.addEventListener("change", applyMonitorSelection);
+      slMaster.addEventListener("input", () => {
+        const v = parseFloat(slMaster.value);
+        lblMaster.textContent = v.toFixed(2);
+        if (master) master.gain.value = v;
+      });
+      btnStart.addEventListener("click", startAll);
+
+      // ───────────────────────────────────────────────────────────────────
+      // Start 버튼: AudioContext 생성/재개 + 모든 소스 연결
+      async function startAll() {
+        if (started) return;
+
+        // 1) AudioContext 준비
+        if (!audioCtx || audioCtx.state === "closed") {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+            latencyHint: "playback",
+            sampleRate: 48000,
+          });
+        }
+        if (audioCtx.state === "suspended") {
+          await audioCtx.resume();
+        }
+        updateCtxPill();
+
+        // 2) 마스터 체인
+        master = new GainNode(audioCtx, { gain: parseFloat(slMaster.value) });
+        if (!routed) {
+          master.connect(audioCtx.destination);
+          routed = true;
+        }
+
+        // 3) 소스 연결
+        await Promise.all(SOURCES.map((_, i) => startReader(i)));
+
+        // 4) 기본 모니터 적용 (select의 현재 값 사용)
+        applyMonitorSelection();
+
+        started = true;
+        btnStart.disabled = true;
+      }
+
+      // Stop 버튼: AudioContext suspend + 해제/정리
+      async function stopAll() {
+        // 재생 음소거
+        state.forEach((st) => {
+          if (st.gainNode) st.gainNode.gain.value = 0;
+        });
+
+        // 미터 정지 및 경로 해제
+        state.forEach((st, i) => {
+          cancelAnimationFrame(st.meterRAF);
+          st.meterRAF = 0;
+          try {
+            st.srcNode && st.srcNode.disconnect();
+          } catch {}
+          try {
+            st.gainNode && st.gainNode.disconnect();
+          } catch {}
+          try {
+            st.analyser && st.analyser.disconnect();
+          } catch {}
+
+          st.srcNode = null;
+          st.gainNode = null;
+          st.analyser = null;
+
+          // mute <audio> 정지
+          if (st.aud) {
+            try {
+              st.aud.pause();
+            } catch {}
+            st.aud.srcObject = null;
+          }
+
+          // 상태 표시
+          setStatus(i, "Stopped");
+          if (st.levelEl) st.levelEl.textContent = `- dBFS`;
+          if (st.vctx && st.canvas) {
+            st.vctx.fillStyle = "#111";
+            st.vctx.fillRect(
+              0,
+              0,
+              st.canvas.clientWidth,
+              st.canvas.clientHeight
+            );
+          }
+
+          // WebRTC 리더 중지(미지원이면 무시)
+          try {
+            st.reader?.stop?.();
+          } catch {}
+          st.reader = null;
+          st.remoteTrack = null;
+          st.remoteStream = null;
+        });
+
+        // 마스터 해제
+        try {
+          master && master.disconnect();
+        } catch {}
+        master = null;
+        routed = false;
+
+        // 오디오 컨텍스트 suspend
+        if (audioCtx && audioCtx.state === "running") {
+          try {
+            await audioCtx.suspend();
+          } catch {}
+        }
+        updateCtxPill();
+
+        started = false;
+        btnStart.disabled = false;
+      }
+
+      function updateCtxPill() {
+        const st = audioCtx ? audioCtx.state : "idle";
+        ctxEl.textContent = "AudioContext: " + st;
+      }
+
+      // ───────────────────────────────────────────────────────────────────
+      // WebRTC 수신기 시작 (소스 i)
+      async function startReader(i) {
+        state[i].ready = new Promise((res) => (state[i].readyResolve = res));
+
+        const reader = new MediaMTXWebRTCReader({
+          url: whepUrl(SOURCES[i].url),
+          onError: (e) => {
+            console.error("[reader error]", i, e);
+            setStatus(i, "Error");
+          },
+          onTrack: async (evt) => {
+            if (evt.track.kind !== "audio") return;
+
+            state[i].remoteTrack = evt.track;
+            state[i].remoteStream = new MediaStream([evt.track]);
+
+            // decode 안정화: mute된 <audio>로 재생 시도
+            if (!state[i].aud) {
+              state[i].aud = new Audio();
+              state[i].aud.muted = true;
+              state[i].aud.playsInline = true;
+            }
+            state[i].aud.srcObject = state[i].remoteStream;
+            try {
+              await state[i].aud.play();
+            } catch (_) {}
+
+            // WebAudio 경로
+            try {
+              state[i].srcNode?.disconnect();
+            } catch {}
+            state[i].srcNode = audioCtx.createMediaStreamSource(
+              state[i].remoteStream
+            );
+            try {
+              state[i].srcNode.channelCount = 1;
+              state[i].srcNode.channelCountMode = "explicit";
+              state[i].srcNode.channelInterpretation = "discrete";
+            } catch {}
+
+            // 재생용 게인 (선택된 소스만 1)
+            state[i].gainNode = new GainNode(audioCtx, { gain: 0 });
+            state[i].srcNode.connect(state[i].gainNode);
+            state[i].gainNode.connect(master);
+
+            // 분석용 아날라이저(항상 연결 → 재생 안 해도 레벨 표시)
+            state[i].analyser = new AnalyserNode(audioCtx, {
+              fftSize: 2048,
+              smoothingTimeConstant: 0.0,
+            });
+            try {
+              state[i].analyser.channelCount = 1;
+              state[i].analyser.channelCountMode = "explicit";
+              state[i].analyser.channelInterpretation = "discrete";
+            } catch {}
+            state[i].srcNode.connect(state[i].analyser);
+
+            setStatus(i, "Connected");
+            state[i].readyResolve?.();
+
+            // 미터 시작 및 모니터 적용
+            startMeter(i);
+            applyMonitorSelection();
+          },
+        });
+
+        state[i].reader = reader;
+        try {
+          await reader.start?.();
+          setStatus(i, "Starting…");
+        } catch (e) {
+          console.warn("reader.start?", i, e);
+          setStatus(i, "Start error");
+        }
+
+        await state[i].ready; // 트랙 도착 대기
+      }
+
+      function setStatus(i, text) {
+        if (state[i].statusEl) state[i].statusEl.textContent = text;
+      }
+
+      // ───────────────────────────────────────────────────────────────────
+      // 모니터 선택(싱글)
+      function applyMonitorSelection() {
+        const sel = selMonitor.value; // "0".."4"
+        state.forEach((st, i) => {
+          if (!st.gainNode) return;
+          st.gainNode.gain.value = Number(sel) === i ? 1 : 0;
+        });
+
+        // 라디오 버튼 동기화
+        for (let i = 0; i < SOURCES.length; i++) {
+          const r = document.getElementById(`mon${i}`);
+          if (r) r.checked = Number(sel) === i;
+        }
+      }
+
+      // ───────────────────────────────────────────────────────────────────
+      // 세로 레벨 미터 (소스별 1개)
+      function startMeter(i) {
+        cancelAnimationFrame(state[i].meterRAF);
+        const canvas = state[i].canvas;
+        const vctx = state[i].vctx;
+        let analyser = state[i].analyser;
+        const levelEl = state[i].levelEl;
+        if (!canvas || !vctx || !analyser) return;
+
+        // 캔버스 사이징
+        const DPR = window.devicePixelRatio || 1;
+        const WCSS = canvas.clientWidth || 24;
+        const HCSS = canvas.clientHeight || 160;
+        canvas.width = Math.max(1, WCSS * DPR);
+        canvas.height = Math.max(1, HCSS * DPR);
+        vctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+        const dbMin = -100,
+          dbMax = 0;
+        const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
+        const dbToH = (dB) =>
+          ((clamp(dB, dbMin, dbMax) - dbMin) / (dbMax - dbMin)) * HCSS;
+
+        function drawGrid() {
+          vctx.strokeStyle = "#2a2a2a";
+          [0, -20, -40, -60, -80, -100].forEach((d) => {
+            const y = HCSS - dbToH(d);
+            vctx.beginPath();
+            vctx.moveTo(0, y);
+            vctx.lineTo(WCSS, y);
+            vctx.stroke();
+          });
+        }
+
+        // 버퍼: 가능하면 float, 아니면 byte
+        const useFloat = typeof analyser.getFloatTimeDomainData === "function";
+        let bufF = useFloat ? new Float32Array(analyser.fftSize) : null;
+        let bufB = useFloat ? null : new Uint8Array(analyser.fftSize);
+
+        function refreshBuffersIfNeeded(a) {
+          if (useFloat) {
+            if (!bufF || bufF.length !== a.fftSize)
+              bufF = new Float32Array(a.fftSize);
+          } else {
+            if (!bufB || bufB.length !== a.fftSize)
+              bufB = new Uint8Array(a.fftSize);
+          }
+        }
+
+        function measureDB(a) {
+          refreshBuffersIfNeeded(a);
+
+          if (useFloat) {
+            a.getFloatTimeDomainData(bufF);
+            // DC 제거
+            let mean = 0;
+            for (let k = 0; k < bufF.length; k++) mean += bufF[k];
+            mean /= bufF.length;
+
+            let sum = 0;
+            for (let k = 0; k < bufF.length; k++) {
+              const x = bufF[k] - mean;
+              sum += x * x;
+            }
+            let rms = Math.sqrt(sum / bufF.length);
+            if (rms < 1e-5) rms = 0; // 무음 게이트
+            const dB = 20 * Math.log10(Math.max(rms, 1e-12));
+            return Math.max(dB, -100);
+          } else {
+            a.getByteTimeDomainData(bufB);
+            let mean = 0;
+            for (let k = 0; k < bufB.length; k++) mean += (bufB[k] - 128) / 128;
+            mean /= bufB.length;
+
+            let sum = 0;
+            for (let k = 0; k < bufB.length; k++) {
+              const x = (bufB[k] - 128) / 128 - mean;
+              sum += x * x;
+            }
+            let rms = Math.sqrt(sum / bufB.length);
+            if (rms < 5e-3) rms = 0; // 무음 게이트(바이트 모드)
+            const dB = 20 * Math.log10(Math.max(rms, 1e-12));
+            return Math.max(dB, -90);
+          }
+        }
+
+        function tick() {
+          state[i].meterRAF = requestAnimationFrame(tick);
+
+          // onTrack 재호출 등으로 analyser가 교체됐을 수 있음
+          if (state[i].analyser && state[i].analyser !== analyser) {
+            analyser = state[i].analyser;
+            bufF = useFloat ? new Float32Array(analyser.fftSize) : null;
+            bufB = useFloat ? null : new Uint8Array(analyser.fftSize);
+          }
+
+          const dB = measureDB(analyser);
+
+          vctx.fillStyle = "#111";
+          vctx.fillRect(0, 0, WCSS, HCSS);
+          drawGrid();
+
+          const h = dbToH(dB);
+          vctx.fillStyle = "#4caf50";
+          vctx.fillRect(4, HCSS - h, WCSS - 8, h);
+
+          if (levelEl) levelEl.textContent = `${dB.toFixed(1)} dBFS`;
+        }
+
+        tick();
+      }
+    </script>
+
+    <hr />
+    <div class="small">
+      Created by SBS Media IT Team, sendust (sendust@sbs.co.kr) & Kim Syehoon
+      (syehoon.kim@sbs.co.kr)
+    </div>
+  </body>
+</html>

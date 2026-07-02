@@ -1,0 +1,7 @@
+{
+    "device": "hw:1,0",
+    "prefix": "HW1",
+    "left": "고검",
+    "right":"국회",
+    "path": "/mnt/sda1/data1"
+}

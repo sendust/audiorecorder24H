@@ -1,0 +1,498 @@
+
+<!doctype html>
+<html lang="ko" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="SBS 기자 출입처 오디오 모니터링 및 녹음 파일 접근 시스템 도움말">
+      
+      
+        <meta name="author" content="Kim Syehoon">
+      
+      
+        <link rel="canonical" href="http://10.10.107.109/help/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.9">
+    
+    
+      
+        <title>SBS 기자 출입처 실시간 오디오 모니터링 - Help</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.2644c6b7.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+  
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+  
+  <style>:root{}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/modern/main.2644c6b7.min.css">
+    
+      <link rel="stylesheet" href="assets/stylesheets/modern/palette.dfe2e883.min.css">
+    
+      <link rel="stylesheet" href="assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          콘텐츠로 이동
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+         
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="상단/헤더">
+    <a
+      href=".."
+      title="Help"
+      class="md-header__button md-logo"
+      aria-label="Help"
+      data-md-component="logo"
+    >
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+       SBS 기자 출입처 실시간 오디오 모니터링 
+    </div>
+     
+    <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+      </label>
+    
+  
+</form>    <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>     
+    <label class="md-header__button md-icon" for="__search">
+       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+    </label>
+    <div class="md-search" data-md-component="search" role="dialog" aria-label="검색">
+  <button type="button" class="md-search__button">
+    검색
+  </button>
+</div>  
+    <div class="md-header__source">
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        시스템 구성 설명
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        인제스트룸 업무 예시
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        실시간모니터 페이지 설명
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wav" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        wav 파일 정보
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        참고사항
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        정보
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        변경 이력
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+  
+
+
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+<h1 id="_1">개요<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>웹브라우저를 통해 기자 출입처 실시간 오디오를 모니터링하고, 녹음된 파일들을 쉽게 접근할 수 있습니다.</p>
+<h2 id="_2">시스템 구성 설명<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ul>
+<li>주소: <a href="http://10.10.107.215">http://10.10.107.215</a></li>
+<li>구성</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>폴더</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>help</td>
+<td>이 도움말 페이지</td>
+</tr>
+<tr>
+<td><a href="http://10.10.107.109/%ED%9C%B4%EC%A7%80%ED%86%B5/">휴지통</a></td>
+<td>24시간 지난 녹음파일 보관</td>
+</tr>
+<tr>
+<td><a href="http://10.10.107.109/%EC%8B%A4%EC%8B%9C%EA%B0%84%EB%AA%A8%EB%8B%88%ED%84%B0/">실시간모니터</a></td>
+<td>실시간으로 들어오는 출입처 직통 마이크 음성 모니터링(PC 모니터/이어폰 이용)</td>
+</tr>
+<tr>
+<td><a href="http://10.10.107.109/%EA%B5%AD%EB%B0%A9%EB%B6%80%EC%99%B8%ED%86%B5%EB%B6%80/">국방부외통부</a></td>
+<td>최근 24시간 이내 녹음된 국방부, 외통부 직통 마이크 음성 파일</td>
+</tr>
+<tr>
+<td><a href="http://10.10.107.109/%EA%B3%A0%EA%B2%80%EA%B5%AD%ED%9A%8C/">고검국회</a></td>
+<td>최근 24시간 이내 녹음된 고검, 국회 직통 마이크 음성 파일</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_3">인제스트룸 업무 예시<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ol>
+<li>출입처 기자로부터 마이크 사용 요청 전화 접수</li>
+<li><a href="http://10.10.107.109/%EC%8B%A4%EC%8B%9C%EA%B0%84%EB%AA%A8%EB%8B%88%ED%84%B0/">실시간모니터</a> 페이지에 접속하여 해당 출입처에서 오디오가 잘 들리는지 확인</li>
+<li>기자 마이크 사용</li>
+<li>해당 출입처 폴더에서 wav 파일 다운로드</li>
+<li>파일이 1개인 경우 그대로 사용</li>
+<li>2개로 나눠져 있을 경우 합쳐야 함</li>
+<li>다운로드한 wav파일을 가공하여 NDS에 등록</li>
+</ol>
+<h2 id="_4">실시간모니터 페이지 설명<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<ul>
+<li>주소: <a href="http://10.10.107.109/실시간모니터/">http://10.10.107.109/실시간모니터/</a></li>
+<li>사용법</li>
+<li>모니터링할 출입처를 클릭하면 배경색이 파랗게 되며 해당 출입처 실시간 오디오 재생</li>
+<li>모든 출입처 오디오를 동시에 들으려면 '전부 듣기' 버튼 클릭</li>
+<li>전부 듣기 상태에서도 원하는 출입처 클릭하면 변경 가능</li>
+<li>참고사항</li>
+<li><code>test</code>는 웹 페이지의 정상 작동을 테스트하기 위한 오디오임</li>
+</ul>
+<h2 id="wav">wav 파일 정보<a class="headerlink" href="#wav" title="Permanent link">&para;</a></h2>
+<ul>
+<li>16bit 48kHz 포맷</li>
+<li>10분 단위로 분할, 분할된 파일들은 중단 없이 이어붙일 수 있음</li>
+<li>녹음 완료된 10분짜리 파일의 이름에 오디오 레벨 값 표기(음수이므로 0에 가까울수록 큼)</li>
+<li>녹음중인 파일은 파일명에 오디오 레벨 값 미표기</li>
+<li>녹음중인 파일도 다운로드 가능</li>
+<li>파일 클릭 시 나오는 화면에서 <code>보기</code> 선택 시 재생 가능(녹음중인 파일도 가능)</li>
+</ul>
+<h2 id="_5">참고사항<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<ul>
+<li>백업시스템 현재 미구축 상태, 라우터를 통한 MXF 파일 녹화 시스템도 병행 운용</li>
+</ul>
+<h2 id="_6">정보<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<ul>
+<li>개발: 미디어IT팀 방송파트 진신우 부장(<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#115;&#101;&#110;&#100;&#117;&#115;&#116;&#64;&#115;&#98;&#115;&#46;&#99;&#111;&#46;&#107;&#114;">&#115;&#101;&#110;&#100;&#117;&#115;&#116;&#64;&#115;&#98;&#115;&#46;&#99;&#111;&#46;&#107;&#114;</a>) / 김세훈 사원(<a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#115;&#121;&#101;&#104;&#111;&#111;&#110;&#46;&#107;&#105;&#109;&#64;&#115;&#98;&#115;&#46;&#99;&#111;&#46;&#107;&#114;">&#115;&#121;&#101;&#104;&#111;&#111;&#110;&#46;&#107;&#105;&#109;&#64;&#115;&#98;&#115;&#46;&#99;&#111;&#46;&#107;&#114;</a>)</li>
+</ul>
+<h2 id="_7">변경 이력<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>버전</th>
+<th>일자</th>
+<th>작성자</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1</td>
+<td>2025-11-06</td>
+<td>김세훈</td>
+<td>최초 제작</td>
+</tr>
+</tbody>
+</table>
+
+  
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  맨위로
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Kim Syehoon
+
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.sections","navigation.top","navigation.tracking","search.highlight","toc.follow"],"search":"../assets/javascripts/workers/search.5e1f2129.min.js","tags":null,"translations":{"clipboard.copied":"클립보드에 복사됨","clipboard.copy":"클립보드로 복사","search.result.more.one":"이 문서에서 1개의 검색 결과 더 보기","search.result.more.other":"이 문서에서 #개의 검색 결과 더 보기","search.result.none":"검색어와 일치하는 문서가 없습니다","search.result.one":"1개의 일치하는 문서","search.result.other":"#개의 일치하는 문서","search.result.placeholder":"검색어를 입력하세요","search.result.term.missing":"포함되지 않은 검색어","select.version":"버전 선택"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.21aa498e.min.js"></script>
+      
+        <script src="assets/javascripts/bundle.21aa498e.min.js"></script>
+      
+    
+  </body>
+</html>

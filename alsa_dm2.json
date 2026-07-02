@@ -1,0 +1,7 @@
+{
+    "device": "hw:0,0",
+    "prefix": "hw0",
+    "left":"국방부",
+    "right":"외통부",
+    "path": "/mnt/sda1/data2"
+}

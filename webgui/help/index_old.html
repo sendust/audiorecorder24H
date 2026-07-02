@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>제품 기능 설명서 - 템플릿</title>
+    <style>
+      @font-face {
+        font-family: "Monoplexkr";
+        src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_Monoplex-kr@1.0/MonoplexKR-Thin.woff2")
+          format("woff2");
+        font-weight: 100;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Monoplexkr";
+        src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_Monoplex-kr@1.0/MonoplexKR-ExtraLight.woff2")
+          format("woff2");
+        font-weight: 200;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Monoplexkr";
+        src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_Monoplex-kr@1.0/MonoplexKR-Light.woff2")
+          format("woff2");
+        font-weight: 300;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Monoplexkr";
+        src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_Monoplex-kr@1.0/MonoplexKR-Regular.woff2")
+          format("woff2");
+        font-weight: 400;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Monoplexkr";
+        src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_Monoplex-kr@1.0/MonoplexKR-Medium.woff2")
+          format("woff2");
+        font-weight: 500;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Monoplexkr";
+        src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_Monoplex-kr@1.0/MonoplexKR-SemiBold.woff2")
+          format("woff2");
+        font-weight: 600;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Monoplexkr";
+        src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_Monoplex-kr@1.0/MonoplexKR-Bold.woff2")
+          format("woff2");
+        font-weight: 700;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Monoplexkr";
+        src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_Monoplex-kr@1.0/MonoplexKR-Text.woff2")
+          format("woff2");
+        font-weight: 800;
+        font-display: swap;
+      }
+
+      :root {
+        --bg: #f7f7f8;
+        --panel: #ffffff;
+        --ink: #111827;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --primary: #2563eb;
+        --primary-ink: #0b3ea8;
+        --accent: #10b981;
+        --warn: #f59e0b;
+        --danger: #ef4444;
+        --code-bg: #0b1220;
+        --code-ink: #e5e7eb;
+        --radius: 14px;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06);
+        --content-w: 1040px;
+        --nav-w: 280px;
+        --topbar-h: 48px;
+      }
+      html,
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--bg);
+        font: 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto,
+          "Apple SD Gothic Neo", Noto Sans KR, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* Topbar */
+      .topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 30;
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+      .topbar .inner {
+        max-width: var(--content-w);
+        margin: 0 auto;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        min-height: 48px;
+      }
+      .product {
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .badge.primary {
+        color: var(--primary-ink);
+        border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
+        background: color-mix(in oklab, var(--primary) 6%, #fff);
+      }
+      /* Layout */
+      .wrap {
+        padding: calc(var(--topbar-h) + 16px) 20px 24px;
+        max-width: var(--content-w);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: var(--nav-w) 1fr;
+        gap: 20px;
+        box-sizing: border-box;
+      }
+      aside.nav {
+        position: sticky;
+        top: calc(var(--topbar-h) + 16px);
+        align-self: start;
+        max-height: calc(100dvh - 80px);
+        overflow: auto;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+      .nav h3 {
+        margin: 12px 12px 6px;
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .toc {
+        list-style: none;
+        margin: 0;
+        padding: 6px;
+      }
+      .toc a {
+        display: block;
+        padding: 8px 10px;
+        border-radius: 10px;
+        color: inherit;
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .toc a:hover {
+        background: #f1f5f9;
+      }
+      .toc a.selected,
+      .toc a.active {
+        background: color-mix(in oklab, var(--primary) 9%, #fff);
+        color: var(--primary-ink);
+        border: 1px solid color-mix(in oklab, var(--primary) 25%, var(--border));
+      }
+      main {
+        min-width: 0;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      /* Rhythm */
+      h1,
+      h2,
+      h3,
+      p,
+      table,
+      ul,
+      pre {
+        margin: 0;
+      }
+      .panel > * + * {
+        margin-top: 12px;
+      }
+      h1 {
+        font-size: 28px;
+        line-height: 1.25;
+      }
+      h2 {
+        font-size: 20px;
+        line-height: 1.25;
+      }
+      h3 {
+        font-size: 16px;
+        line-height: 1.25;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      th,
+      td {
+        border: 1px solid var(--border);
+        padding: 8px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+      thead th {
+        background: #f8fafc;
+      }
+      tbody tr:nth-child(even) {
+        background: #fcfcfd;
+      }
+      code,
+      pre {
+        font-family: "Monoplexkr", monospace, ui-monospace, SFMono-Regular,
+          Menlo, Consolas, "Roboto Mono", monospace;
+      }
+      code.inline {
+        background: #eef2ff;
+        padding: 1px 6px;
+        border-radius: 8px;
+      }
+      pre {
+        background: var(--code-bg);
+        color: var(--code-ink);
+        padding: 14px;
+        border-radius: 12px;
+        overflow: auto;
+      }
+      /* Anchor offset */
+      .section {
+        scroll-margin-top: calc(var(--topbar-h) + 12px);
+      }
+      /* Numbering */
+      body {
+        counter-reset: h2;
+      }
+      h2.num::before {
+        counter-increment: h2;
+        content: counter(h2) ". ";
+        color: var(--muted);
+        font-weight: 700;
+      }
+      h3.num::before {
+        content: counters(h2, ".") "." counter(h3) " ";
+        counter-increment: h3;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      section {
+        counter-reset: h3;
+      }
+      /* Print */
+      @media print {
+        .topbar,
+        aside.nav {
+          display: none;
+        }
+        .wrap {
+          display: block;
+          max-width: 100%;
+          padding: 0;
+        }
+        .panel {
+          break-inside: avoid;
+          box-shadow: none;
+          border-color: #bbb;
+        }
+        h1,
+        h2,
+        h3 {
+          page-break-after: avoid;
+        }
+        pre {
+          white-space: pre-wrap;
+        }
+      }
+      /* Callout */
+      .callout {
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--primary);
+        background: #fbfdff;
+        padding: 12px 14px;
+        border-radius: 10px;
+      }
+      .callout.warn {
+        border-left-color: var(--warn);
+        background: #fffaf2;
+      }
+      .muted {
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Top bar -->
+    <header class="topbar" role="banner">
+      <div class="inner">
+        <div class="product" id="doc-title">제품 기능 설명서</div>
+        <span class="badge primary" id="badge-version">v0.1</span>
+        <span class="badge" id="badge-status">상태: Draft</span>
+        <span class="badge" id="badge-date">작성일: -</span>
+        <span class="badge" id="badge-owner"
+          >문서 소유: <strong>-</strong></span
+        >
+      </div>
+    </header>
+
+    <!-- Topbar height → CSS var -->
+    <script>
+      (function () {
+        const tb = document.querySelector(".topbar");
+        if (!tb) return;
+        function apply() {
+          const h = tb.getBoundingClientRect().height || 48;
+          document.documentElement.style.setProperty("--topbar-h", h + "px");
+        }
+        apply();
+        if (typeof ResizeObserver !== "undefined")
+          new ResizeObserver(apply).observe(tb);
+        else {
+          addEventListener("load", apply);
+          addEventListener("resize", apply);
+        }
+      })();
+    </script>
+
+    <div class="wrap">
+      <aside class="nav" role="navigation" aria-label="목차">
+        <h3>Contents</h3>
+        <ul class="toc" id="toc"></ul>
+      </aside>
+      <main role="main" id="main">
+        <section class="panel section">
+          <h1>문서를 불러오는 중…</h1>
+          <p class="muted">
+            파일명.html → <code class="inline">./docs/help.md</code> 규칙으로
+            로드합니다.
+          </p>
+        </section>
+      </main>
+    </div>
+
+    <!-- marked.js -->
+    <script src="./marked.min.js"></script>
+    <script>
+      // -------- Filename → ./docs/FILENAME.md --------
+      function resolveMdPath() {
+        // const u = new URL(location.href);
+        // // ?md= 로 명시 경로가 있으면 우선
+        // const q = u.searchParams.get("md");
+        // if (q) return q;
+
+        // const path = decodeURIComponent(u.pathname);
+        // const base = path.substring(path.lastIndexOf("/") + 1) || "index.html";
+        // const stem = base.replace(/\.html?$/i, "") || "index";
+        // return `./docs/${stem}.md`;
+        return "./docs/help.md";
+      }
+
+      // -------- Front-matter parser --------
+      function parseFrontMatter(md) {
+        const fm = {
+          title: null,
+          version: null,
+          status: null,
+          date: null,
+          owner: null,
+        };
+        const m = md.match(/^---\s*([\s\S]*?)\s*---\s*/);
+        if (!m) return { fm, content: md };
+        for (const line of m[1].split(/\r?\n/)) {
+          const mm = line.match(/^\s*([A-Za-z_-]+)\s*:\s*(.+?)\s*$/);
+          if (!mm) continue;
+          const k = mm[1].toLowerCase(),
+            v = mm[2];
+          if (k === "title") fm.title = v + " 설명서";
+          if (k === "version") fm.version = v;
+          if (k === "status") fm.status = v;
+          if (k === "date") fm.date = v;
+          if (k === "owner") fm.owner = v;
+        }
+        return { fm, content: md.slice(m[0].length) };
+      }
+      function applyBadges(fm) {
+        if (fm.title)
+          document.getElementById("doc-title").textContent = fm.title;
+        if (fm.version)
+          document.getElementById("badge-version").textContent =
+            fm.version.startsWith("v") ? fm.version : "v" + fm.version;
+        if (fm.status)
+          document.getElementById("badge-status").textContent =
+            "상태: " + fm.status;
+        if (fm.date)
+          document.getElementById("badge-date").textContent =
+            "작성일: " + fm.date;
+        if (fm.owner)
+          document.querySelector("#badge-owner strong").textContent = fm.owner;
+      }
+
+      // -------- Anchor mapping (Korean → fixed IDs) --------
+      const anchorMap = [];
+      //   { key: /^(개요|overview)$/i, id: "overview", title: "개요" },
+      //   {
+      //     key: /(시스템\s*구성|architecture)/i,
+      //     id: "architecture",
+      //     title: "시스템 구성",
+      //   },
+      //   {
+      //     key: /(요구사항|requirements)/i,
+      //     id: "requirements",
+      //     title: "요구사항",
+      //   },
+      //   {
+      //     key: /(기능\s*목록|feature\s*list)/i,
+      //     id: "feature-list",
+      //     title: "기능 목록",
+      //   },
+      //   {
+      //     key: /(상세\s*기능|feature\s*detail)/i,
+      //     id: "feature-detail",
+      //     title: "상세 기능 템플릿",
+      //   },
+      //   { key: /(api|연동)/i, id: "api", title: "API/연동" },
+      //   { key: /(ui\/?ux|uiux)/i, id: "uiux", title: "UI/UX" },
+      //   { key: /(예외|오류|errors)/i, id: "errors", title: "예외/오류 코드" },
+      //   {
+      //     key: /(성능|용량|performance)/i,
+      //     id: "performance",
+      //     title: "성능/용량",
+      //   },
+      //   { key: /(보안|권한|security)/i, id: "security", title: "보안/권한" },
+      //   { key: /(운영|모니터링|ops)/i, id: "ops", title: "운영/모니터링" },
+      //   {
+      //     key: /(변경\s*이력|changelog)/i,
+      //     id: "changelog",
+      //     title: "변경 이력",
+      //   },
+      //   { key: /(부록|appendix)/i, id: "appendix", title: "부록" },
+      // ];
+
+      const slug = (s) =>
+        s
+          .toLowerCase()
+          .trim()
+          .replace(/[().]/g, "")
+          .replace(/[^\p{L}\p{N}\s\-_/]+/gu, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-");
+      function mapAnchor(h2Text) {
+        for (const m of anchorMap) if (m.key.test(h2Text)) return m.id;
+        return slug(h2Text);
+      }
+
+      // -------- Scroll sync (click priority) --------
+      function setupScrollSync() {
+        const links = Array.from(document.querySelectorAll(".toc a"));
+        const sections = links.map((a) =>
+          document.querySelector(a.getAttribute("href"))
+        );
+        function getVarPx(name, def) {
+          const v = getComputedStyle(document.documentElement)
+            .getPropertyValue(name)
+            .trim();
+          const n = parseFloat(v);
+          return Number.isFinite(n) ? n : def;
+        }
+        function getTopbarH() {
+          return getVarPx("--topbar-h", 48);
+        }
+        function getScrollMarginTop() {
+          const s0 = sections.find(Boolean);
+          if (!s0) return 12;
+          const v = getComputedStyle(s0).scrollMarginTop;
+          const n = parseFloat(v);
+          return Number.isFinite(n) ? n : 12;
+        }
+        function setSelectedByIndex(idx) {
+          links.forEach((a) => a.classList.remove("selected"));
+          if (idx >= 0 && links[idx]) links[idx].classList.add("selected");
+        }
+        function setSelectedByLink(a) {
+          links.forEach((x) => x.classList.remove("selected"));
+          if (a) a.classList.add("selected");
+        }
+        let lastClickAt = 0;
+        const CLICK_SUPPRESS_MS = 200;
+        function recomputeOnScroll() {
+          if (performance.now() - lastClickAt < CLICK_SUPPRESS_MS) return;
+          const line = scrollY + getTopbarH() + getScrollMarginTop();
+          let idx = -1;
+          for (let i = 0; i < sections.length; i++) {
+            const s = sections[i];
+            if (!s) continue;
+            const top = s.offsetTop;
+            if (top <= line) idx = i;
+            else break;
+          }
+          if (idx === -1) idx = 0;
+          setSelectedByIndex(idx);
+        }
+        links.forEach((a) => {
+          a.addEventListener("click", () => {
+            lastClickAt = performance.now();
+            setSelectedByLink(a);
+            requestAnimationFrame(() => setSelectedByLink(a));
+          });
+        });
+        addEventListener("hashchange", () => {
+          const cur = links.find(
+            (l) => l.getAttribute("href") === location.hash
+          );
+          if (cur) setSelectedByLink(cur);
+          requestAnimationFrame(recomputeOnScroll);
+        });
+        let ticking = false;
+        addEventListener(
+          "scroll",
+          () => {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(() => {
+              ticking = false;
+              recomputeOnScroll();
+            });
+          },
+          { passive: true }
+        );
+        const cur =
+          links.find((l) => l.getAttribute("href") === location.hash) ||
+          links[0];
+        setSelectedByLink(cur);
+        requestAnimationFrame(recomputeOnScroll);
+      }
+
+      // -------- Render pipeline --------
+      async function loadMarkdown(path) {
+        const res = await fetch(path, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Failed to load ${path} (${res.status})`);
+        return await res.text();
+      }
+
+      function isNonEmptyNode(n) {
+        if (!n) return false;
+        if (n.nodeType === 3) return !!n.textContent.trim();
+        if (n.nodeType === 1) return true;
+        return false;
+      }
+
+      function buildFromMarkdown(mdText) {
+        const { fm, content } = parseFrontMatter(mdText || "");
+        document.getElementsByTagName("title")[0].text = fm.title;
+        applyBadges(fm);
+
+        // 1) Markdown → HTML
+        const html = marked.parse(content, { mangle: false, headerIds: false });
+
+        // 2) DOM으로 파싱
+        const tmp = document.createElement("div");
+        tmp.innerHTML = html;
+        const nodes = Array.from(tmp.childNodes);
+
+        // 3) 프리페이스(첫 H2 이전)와 섹션(H2 단위) 분리
+        const preface = [];
+        const sections = [];
+        let i = 0;
+
+        // 3-a) 첫 H2 이전까지는 개요(preface)
+        while (i < nodes.length) {
+          const n = nodes[i];
+          if (n.nodeType === 1 && /^H2$/i.test(n.tagName)) break;
+          preface.push(n);
+          i++;
+        }
+
+        // 3-b) 이후는 H2 기준 섹션으로 분할
+        while (i < nodes.length) {
+          const h2 = nodes[i++];
+          if (!(h2.nodeType === 1 && /^H2$/i.test(h2.tagName))) continue;
+          const title = h2.textContent.trim();
+          const id = mapAnchor(title);
+
+          const blocks = [];
+          while (i < nodes.length) {
+            const n = nodes[i];
+            if (n.nodeType === 1 && /^H2$/i.test(n.tagName)) break;
+            blocks.push(n);
+            i++;
+          }
+          sections.push({ title, id, blocks });
+        }
+
+        // 4) 개요(overview) 만들기
+        // - H1이 있으면 제목으로 사용하고 나머지는 개요 본문
+        // - 첫 H2가 '개요'라면 그 섹션을 개요로 승격하고 섹션 목록에서 제외
+        let firstH1 = preface.find(
+          (n) => n.nodeType === 1 && /^H1$/i.test(n.tagName)
+        );
+        let overviewBody = [];
+
+        if (firstH1) {
+          // preface에서 H1 제거하고 나머지를 개요 본문으로 사용
+          const h1Idx = preface.indexOf(firstH1);
+          overviewBody = preface
+            .slice(0, h1Idx)
+            .concat(preface.slice(h1Idx + 1))
+            .filter(isNonEmptyNode);
+        } else {
+          overviewBody = preface.filter(isNonEmptyNode);
+        }
+
+        // 첫 섹션이 '개요'라면 섹션에서 제거하고 개요 본문으로 합침
+        if (sections.length > 0 && /(개요|overview)/i.test(sections[0].title)) {
+          const s0 = sections.shift();
+          overviewBody = overviewBody.concat(s0.blocks);
+          // 문서 제목이 없고 s0 안에 H1이 있다면 그걸로 타이틀 보정
+          if (!firstH1) {
+            firstH1 =
+              s0.blocks.find(
+                (n) => n.nodeType === 1 && /^H1$/i.test(n.tagName)
+              ) || null;
+          }
+        }
+
+        const main = document.getElementById("main");
+        main.innerHTML = "";
+
+        // 4-a) 개요 섹션 렌더링
+        const overview = document.createElement("section");
+        overview.id = "overview";
+        overview.className = "panel section";
+
+        const h1 = document.createElement("h1");
+        h1.textContent =
+          fm.title ||
+          (firstH1 ? firstH1.textContent.trim() : "제품 기능 설명서");
+        overview.appendChild(h1);
+
+        if (overviewBody.length) {
+          overviewBody.forEach((node) => overview.appendChild(node));
+        } else {
+          const call = document.createElement("div");
+          call.className = "callout";
+          call.innerHTML =
+            "<strong>작성 가이드:</strong> H2(##)로 섹션을 구분하면 좌측 목차가 자동 생성됩니다.";
+          overview.appendChild(call);
+        }
+        main.appendChild(overview);
+
+        // 5) 비어 있는 섹션 제거 & H3 번호 부여
+        const cleanSections = sections
+          .map((s) => {
+            const blocks = s.blocks.filter(isNonEmptyNode);
+            return { ...s, blocks };
+          })
+          .filter((s) => s.title && s.blocks.length); // 제목 있고 콘텐츠 있는 섹션만
+
+        // 6) 섹션 렌더링
+        const navItems = [];
+        for (const s of cleanSections) {
+          const sec = document.createElement("section");
+          sec.id = s.id;
+          sec.className = "panel section";
+
+          const h2 = document.createElement("h2");
+          h2.className = "num";
+          h2.textContent = s.title;
+          sec.appendChild(h2);
+
+          s.blocks.forEach((b) => {
+            if (b.nodeType === 1 && /^H3$/i.test(b.tagName))
+              b.classList.add("num");
+            sec.appendChild(b);
+          });
+
+          main.appendChild(sec);
+          navItems.push({ id: s.id, title: s.title });
+        }
+
+        // 7) TOC 구성(overview 제외, 중복/빈 섹션 배제)
+        const toc = document.getElementById("toc");
+        toc.innerHTML = "";
+
+        const seen = new Set();
+
+        ((navItems) => {
+          const toc = document.getElementById("toc");
+          toc.innerHTML = "";
+
+          // navItems는 H2를 “문서에서 발견된 순서”로 쌓여 있음
+          const items = [{ id: "overview", title: "개요" }, ...navItems];
+
+          const seen = new Set();
+          for (const it of items) {
+            if (!it.id || seen.has(it.id)) continue; // 중복/빈 아이디 방지
+            seen.add(it.id);
+
+            const li = document.createElement("li");
+            const a = document.createElement("a");
+            a.href = "#" + it.id;
+            a.textContent = it.title || "섹션";
+            li.appendChild(a);
+            toc.appendChild(li);
+          }
+        })(navItems);
+        // 8) 스크롤 동기화
+        setupScrollSync();
+      }
+
+      (async function init() {
+        // topbar height var
+        const tb = document.querySelector(".topbar");
+        if (tb) {
+          const h = tb.getBoundingClientRect().height || 48;
+          document.documentElement.style.setProperty("--topbar-h", h + "px");
+        }
+
+        const mdPath = resolveMdPath();
+        try {
+          const md = await loadMarkdown(mdPath);
+          buildFromMarkdown(md);
+        } catch (err) {
+          const main = document.getElementById("main");
+          main.innerHTML = "";
+          const s = document.createElement("section");
+          s.className = "panel section";
+          s.innerHTML = `
+          <h1>문서 로드 실패</h1>
+          <div class="callout warn" role="alert">
+            <strong>경로:</strong> <code class="inline">${mdPath}</code><br/>
+            <strong>원인:</strong> ${String(err.message)}<br/>
+            <span class="muted">서버에서 제공 중인지, 경로/권한을 확인하세요. 필요 시 <code class="inline">?md=상대/절대/URL.md</code> 로 오버라이드 가능합니다.</span>
+          </div>`;
+          main.appendChild(s);
+        }
+        const sections = document.getElementsByTagName("section");
+        Array.from(sections).forEach((section) => {
+          Array.from(section.getElementsByTagName("a")).forEach((link) => {
+            link.target = "_blank";
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

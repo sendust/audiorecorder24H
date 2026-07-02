@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SBS 기자 출입처 실시간 오디오 모니터링</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --card-w: 320px;
+        --meter-h: 160px;
+        --card-selected-bg: #63bdfd; /* 선택 배경색 (옅은 파랑) */
+        --card-hover-ring: rgba(30, 136, 229, 0.12);
+      }
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto,
+          Apple SD Gothic Neo, sans-serif;
+        background: #fafafa;
+        margin: 24px;
+      }
+      h1 {
+        margin: 0 0 16px 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--card-w), 1fr));
+        gap: 16px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        border-width: 5px;
+        padding: 12px 14px;
+        cursor: pointer;
+        transition: background-color 140ms ease, border-color 120ms ease,
+          box-shadow 120ms ease;
+      }
+      .card:hover {
+        border-color: #182530 !important;
+        box-shadow: 0 0 0 3px var(--card-hover-ring);
+      }
+      .card.selected {
+        background: var(--card-selected-bg);
+        border-color: #90caf9; /* 선택임을 미묘하게 보이게만 */
+        box-shadow: 0 0 0 2px var(--card-hover-ring);
+      }
+      .title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .pill {
+        font-size: 12px;
+        background: #eee;
+        padding: 2px 8px;
+        border-radius: 9999px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 8px 0;
+        flex-wrap: wrap;
+      }
+      .meter {
+        width: 24px;
+        height: var(--meter-h);
+        background: #111;
+        border-radius: 6px;
+      }
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .small {
+        color: #666;
+        font-size: 12px;
+      }
+      fieldset {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 16px;
+      }
+      legend {
+        color: #333;
+        padding: 0 6px;
+      }
+      input[type="range"] {
+        width: 220px;
+      }
+      .status {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      button {
+        min-width: 120px;
+        width: max-content;
+        height: 60px;
+        font-size: x-large;
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        background: #fff;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    </style>
+    <script src="./reader.js"></script>
+  </head>
+  <body>
+    <h1>SBS 기자 출입처 실시간 오디오 모니터링</h1>
+
+    <fieldset>
+      <legend>전체 제어</legend>
+      <div class="row controls">
+        <label>
+          Master Gain
+          <input
+            id="slMaster"
+            type="range"
+            min="0"
+            max="2"
+            step="0.01"
+            value="1.00"
+          />
+          <span id="lblMaster">1.00</span>
+        </label>
+
+        <!-- Start 제거, 전부 듣기만 유지 -->
+        <button id="btnAll" title="URL ?test=true 시 test 포함, 아니면 제외">
+          전부 듣기
+        </button>
+      </div>
+
+      <div id="globalStatus" class="status">
+        <span class="pill" id="ctx">AudioContext: idle</span>
+        <span class="pill" id="monMode">Mode: SINGLE</span>
+        <span class="pill" id="testIncl">ALL includes test: OFF</span>
+      </div>
+    </fieldset>
+
+    <div class="grid" id="grid"></div>
+
+    <script>
+      // ───────────────────────────────────────────────────────────────────
+      // 설정
+      const SOURCES = [
+        {
+          title: "고검",
+          url: `http://${window.location.hostname}:8889/alsa10`,
+        }, // 0
+        {
+          title: "국회",
+          url: `http://${window.location.hostname}:8889/alsa11`,
+        }, // 1
+        {
+          title: "국방부",
+          url: `http://${window.location.hostname}:8889/alsa00`,
+        }, // 2
+        {
+          title: "외교부",
+          url: `http://${window.location.hostname}:8889/alsa01`,
+        }, // 3
+        { title: "test", url: `http://${window.location.hostname}:8889/test` }, // 4 (조건부 포함)
+      ];
+      const TEST_INDEX = 4;
+      const whepUrl = (u) => u.replace(/\/$/, "") + "/whep";
+
+      // URL 파라미터: ?test=true → 전부 듣기에 test 포함
+      const params = new URLSearchParams(location.search);
+      const includeTestInAll = params.get("test") === "true";
+
+      // DOM
+      const grid = document.getElementById("grid");
+      const slMaster = document.getElementById("slMaster");
+      const lblMaster = document.getElementById("lblMaster");
+      const ctxEl = document.getElementById("ctx");
+      const btnAll = document.getElementById("btnAll");
+      const monModeEl = document.getElementById("monMode");
+      const testInclEl = document.getElementById("testIncl");
+
+      // 상태
+      let audioCtx = null;
+      let master = null;
+      let routed = false;
+      let started = false;
+
+      let listenAllMode = false; // ALL/SINGLE
+      let selectedIndex = null; // SINGLE 모드에서 선택된 인덱스
+
+      const state = SOURCES.map(() => ({
+        reader: null,
+        remoteTrack: null,
+        remoteStream: null,
+        aud: null,
+        srcNode: null,
+        gainNode: null,
+        analyser: null,
+        meterRAF: 0,
+        canvas: null,
+        vctx: null,
+        statusEl: null,
+        levelEl: null,
+        cardEl: null, // 카드 요소 참조(선택 표시용)
+        readyResolve: null,
+        ready: null,
+      }));
+
+      testInclEl.textContent =
+        "ALL includes test: " + (includeTestInAll ? "ON" : "OFF");
+
+      // ───────────────────────────────────────────────────────────────────
+      // UI 생성 (라디오 제거, 카드 클릭으로 선택)
+      SOURCES.forEach((s, i) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.id = `card${i}`;
+
+        const title = document.createElement("div");
+        title.className = "title";
+        title.innerHTML = `${s.title} <span class="pill" id="st${i}">Idle</span>`;
+
+        const meterWrap = document.createElement("div");
+        meterWrap.className = "row";
+        const canvas = document.createElement("canvas");
+        canvas.className = "meter";
+        canvas.id = `vz${i}`;
+        meterWrap.appendChild(canvas);
+
+        const labels = document.createElement("div");
+        labels.innerHTML = `
+          <div class="small">세로 레벨미터 (RMS dBFS)</div>
+          <div class="small" id="lv${i}">- dBFS</div>`;
+        meterWrap.appendChild(labels);
+
+        card.appendChild(title);
+        card.appendChild(meterWrap);
+        grid.appendChild(card);
+
+        // 상태 참조 저장
+        state[i].canvas = canvas;
+        state[i].vctx = canvas.getContext("2d");
+        state[i].statusEl = document.getElementById(`st${i}`);
+        state[i].levelEl = document.getElementById(`lv${i}`);
+        state[i].cardEl = card;
+
+        // 카드 클릭 → 사용자 제스처로 시작 + SINGLE 전환 + 하이라이트 갱신
+        card.addEventListener("click", async () => {
+          await ensureStartedFromGesture();
+          listenAllMode = false;
+          selectedIndex = i;
+          updateModePill();
+          applyCurrentMonitorMode();
+          updateCardSelections();
+        });
+      });
+
+      // 컨트롤 바인딩
+      slMaster.addEventListener("input", () => {
+        const v = parseFloat(slMaster.value);
+        lblMaster.textContent = v.toFixed(2);
+        if (master) master.gain.value = v;
+      });
+
+      // ‘전부 듣기’ → 시작/ALL 전환 + 하이라이트 반영
+      btnAll.addEventListener("click", async () => {
+        await ensureStartedFromGesture();
+        listenAllMode = true;
+        updateModePill();
+        applyCurrentMonitorMode();
+        updateCardSelections();
+      });
+
+      // ───────────────────────────────────────────────────────────────────
+      // 최초 사용자 제스처로 시작
+      async function ensureStartedFromGesture() {
+        if (started) return;
+        await startAll(); // 내부에서 AudioContext 생성/재개 + 소스 준비
+      }
+
+      async function startAll() {
+        if (!audioCtx || audioCtx.state === "closed") {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+            latencyHint: "playback",
+            sampleRate: 48000,
+          });
+        }
+        if (audioCtx.state === "suspended") {
+          await audioCtx.resume();
+        }
+        updateCtxPill();
+
+        master = new GainNode(audioCtx, { gain: parseFloat(slMaster.value) });
+        if (!routed) {
+          master.connect(audioCtx.destination);
+          routed = true;
+        }
+
+        // 모든 소스에 리더 연결(동시에 미터까지 준비)
+        await Promise.all(SOURCES.map((_, i) => startReader(i)));
+
+        // 시작 직후 라우팅: 아직 선택 안 되었으면 무음 유지
+        applyCurrentMonitorMode();
+
+        started = true;
+      }
+
+      function updateCtxPill() {
+        const st = audioCtx ? audioCtx.state : "idle";
+        ctxEl.textContent = "AudioContext: " + st;
+      }
+      function updateModePill() {
+        monModeEl.textContent = "Mode: " + (listenAllMode ? "ALL" : "SINGLE");
+      }
+
+      // ───────────────────────────────────────────────────────────────────
+      // WebRTC 수신기
+      async function startReader(i) {
+        state[i].ready = new Promise((res) => (state[i].readyResolve = res));
+
+        const reader = new MediaMTXWebRTCReader({
+          url: whepUrl(SOURCES[i].url),
+          onError: (e) => {
+            console.error("[reader error]", i, e);
+            setStatus(i, "Error");
+          },
+          onTrack: async (evt) => {
+            if (evt.track.kind !== "audio") return;
+
+            state[i].remoteTrack = evt.track;
+            state[i].remoteStream = new MediaStream([evt.track]);
+
+            // decode 안정화용 mute 오디오
+            if (!state[i].aud) {
+              state[i].aud = new Audio();
+              state[i].aud.muted = true;
+              state[i].aud.playsInline = true;
+            }
+            state[i].aud.srcObject = state[i].remoteStream;
+            try {
+              await state[i].aud.play();
+            } catch (_) {}
+
+            // WebAudio 경로
+            try {
+              state[i].srcNode?.disconnect();
+            } catch {}
+            state[i].srcNode = audioCtx.createMediaStreamSource(
+              state[i].remoteStream
+            );
+            try {
+              state[i].srcNode.channelCount = 1;
+              state[i].srcNode.channelCountMode = "explicit";
+              state[i].srcNode.channelInterpretation = "discrete";
+            } catch {}
+
+            state[i].gainNode = new GainNode(audioCtx, { gain: 0 });
+            state[i].srcNode.connect(state[i].gainNode);
+            state[i].gainNode.connect(master);
+
+            state[i].analyser = new AnalyserNode(audioCtx, {
+              fftSize: 2048,
+              smoothingTimeConstant: 0.0,
+            });
+            try {
+              state[i].analyser.channelCount = 1;
+              state[i].analyser.channelCountMode = "explicit";
+              state[i].analyser.channelInterpretation = "discrete";
+            } catch {}
+            state[i].srcNode.connect(state[i].analyser);
+
+            setStatus(i, "Connected");
+            state[i].readyResolve?.();
+
+            // 미터 시작 및 현재 모드 라우팅(트랙 교체 대응)
+            startMeter(i);
+            applyCurrentMonitorMode();
+          },
+        });
+
+        state[i].reader = reader;
+        try {
+          await reader.start?.();
+          setStatus(i, "Starting…");
+        } catch (e) {
+          console.warn("reader.start?", i, e);
+          setStatus(i, "Start error");
+        }
+
+        await state[i].ready;
+      }
+
+      function setStatus(i, text) {
+        if (state[i].statusEl) state[i].statusEl.textContent = text;
+      }
+
+      // ───────────────────────────────────────────────────────────────────
+      // 라우팅
+      function applyCurrentMonitorMode() {
+        if (!started) return; // 아직 시작 전이면 아무 것도 하지 않음
+        if (listenAllMode) applyAllListen();
+        else applySingleSelection();
+      }
+
+      // SINGLE: 선택 인덱스만 재생(미선택이면 모두 mute)
+      function applySingleSelection() {
+        state.forEach((st, i) => {
+          if (!st.gainNode) return;
+          st.gainNode.gain.value = selectedIndex === i ? 1 : 0;
+        });
+      }
+
+      // ALL: test 포함 여부는 URL 파라미터로 결정
+      function applyAllListen() {
+        state.forEach((st, i) => {
+          if (!st.gainNode) return;
+          const includeThis = includeTestInAll ? true : i !== TEST_INDEX;
+          st.gainNode.gain.value = includeThis ? 1 : 0;
+        });
+      }
+
+      // ───────────────────────────────────────────────────────────────────
+      // 카드 선택 표시(테두리 파란색)
+      function updateCardSelections() {
+        state.forEach((st, i) => {
+          const card = st.cardEl;
+          if (!card) return;
+
+          if (listenAllMode) {
+            // ALL 모드: test 포함 여부 반영
+            const includeThis = includeTestInAll ? true : i !== TEST_INDEX;
+            card.classList.toggle("selected", includeThis);
+          } else {
+            // SINGLE 모드: 선택된 카드만 표시
+            card.classList.toggle("selected", selectedIndex === i);
+          }
+        });
+      }
+
+      // ───────────────────────────────────────────────────────────────────
+      // 레벨 미터
+      function startMeter(i) {
+        cancelAnimationFrame(state[i].meterRAF);
+        const canvas = state[i].canvas,
+          vctx = state[i].vctx;
+        let analyser = state[i].analyser;
+        const levelEl = state[i].levelEl;
+        if (!canvas || !vctx || !analyser) return;
+
+        const DPR = window.devicePixelRatio || 1;
+        const WCSS = canvas.clientWidth || 24;
+        const HCSS = canvas.clientHeight || 160;
+        canvas.width = Math.max(1, WCSS * DPR);
+        canvas.height = Math.max(1, HCSS * DPR);
+        vctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+        const dbMin = -100,
+          dbMax = 0;
+        const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
+        const dbToH = (dB) =>
+          ((clamp(dB, dbMin, dbMax) - dbMin) / (dbMax - dbMin)) * HCSS;
+
+        function drawGrid() {
+          vctx.strokeStyle = "#2a2a2a";
+          [0, -20, -40, -60, -80, -100].forEach((d) => {
+            const y = HCSS - dbToH(d);
+            vctx.beginPath();
+            vctx.moveTo(0, y);
+            vctx.lineTo(WCSS, y);
+            vctx.stroke();
+          });
+        }
+
+        const useFloat = typeof analyser.getFloatTimeDomainData === "function";
+        let bufF = useFloat ? new Float32Array(analyser.fftSize) : null;
+        let bufB = useFloat ? null : new Uint8Array(analyser.fftSize);
+
+        function refreshBuffersIfNeeded(a) {
+          if (useFloat) {
+            if (!bufF || bufF.length !== a.fftSize)
+              bufF = new Float32Array(a.fftSize);
+          } else {
+            if (!bufB || bufB.length !== a.fftSize)
+              bufB = new Uint8Array(a.fftSize);
+          }
+        }
+
+        function measureDB(a) {
+          refreshBuffersIfNeeded(a);
+          if (useFloat) {
+            a.getFloatTimeDomainData(bufF);
+            let mean = 0;
+            for (let k = 0; k < bufF.length; k++) mean += bufF[k];
+            mean /= bufF.length;
+            let sum = 0;
+            for (let k = 0; k < bufF.length; k++) {
+              const x = bufF[k] - mean;
+              sum += x * x;
+            }
+            let rms = Math.sqrt(sum / bufF.length);
+            if (rms < 1e-5) rms = 0;
+            const dB = 20 * Math.log10(Math.max(rms, 1e-12));
+            return Math.max(dB, -100);
+          } else {
+            a.getByteTimeDomainData(bufB);
+            let mean = 0;
+            for (let k = 0; k < bufB.length; k++) mean += (bufB[k] - 128) / 128;
+            mean /= bufB.length;
+            let sum = 0;
+            for (let k = 0; k < bufB.length; k++) {
+              const x = (bufB[k] - 128) / 128 - mean;
+              sum += x * x;
+            }
+            let rms = Math.sqrt(sum / bufB.length);
+            if (rms < 5e-3) rms = 0;
+            const dB = 20 * Math.log10(Math.max(rms, 1e-12));
+            return Math.max(dB, -90);
+          }
+        }
+
+        function tick() {
+          state[i].meterRAF = requestAnimationFrame(tick);
+
+          if (state[i].analyser && state[i].analyser !== analyser) {
+            analyser = state[i].analyser;
+            bufF = useFloat ? new Float32Array(analyser.fftSize) : null;
+            bufB = useFloat ? null : new Uint8Array(analyser.fftSize);
+          }
+
+          const dB = measureDB(analyser);
+
+          vctx.fillStyle = "#111";
+          vctx.fillRect(0, 0, WCSS, HCSS);
+          drawGrid();
+
+          const h = dbToH(dB);
+          vctx.fillStyle = "#4caf50";
+          vctx.fillRect(4, HCSS - h, WCSS - 8, h);
+
+          if (levelEl) levelEl.textContent = `${dB.toFixed(1)} dBFS`;
+        }
+
+        tick();
+      }
+
+      // 초기 표시(시작 전): SINGLE 모드, 선택 없음 → 하이라이트 없음
+      updateCardSelections();
+    </script>
+
+    <hr />
+    <div class="small">
+      Created by SBS Media IT Team, sendust (sendust@sbs.co.kr) & Kim Syehoon
+      (syehoon.kim@sbs.co.kr)
+    </div>
+  </body>
+</html>
