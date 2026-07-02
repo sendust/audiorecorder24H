@@ -258,3 +258,7 @@ python3 segment_recorder_dm_rtsp.py alsa_dm2.json
 MIT License
 
 <img src="screenshot_1.png">
+<img src="screenshot_2.png">
+<img src="screenshot_3.png">
+
+
